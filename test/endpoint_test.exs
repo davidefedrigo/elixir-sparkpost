@@ -86,7 +86,7 @@ defmodule SparkPost.EndpointTest do
       respfn.(method, url, opts)
     end
     ] do
-      Enum.each([:get, :post, :put, :delete], fn method -> 
+      Enum.each([:get, :post, :put, :delete], fn method ->
         Endpoint.request(method, "transmissions", []) end)
     end
   end
@@ -100,6 +100,23 @@ defmodule SparkPost.EndpointTest do
     ] do
       Endpoint.request(:post, "transmissions", [body: %{}])
       Endpoint.request(:put, "transmissions", [body: %{}])
+    end
+  end
+
+  test "Endpoint.request includes request timeout" do
+    respfn = MockServer.mk_resp
+    with_mock HTTPotion, [request: fn (method, url, opts) ->
+      # assert opts[:timeout] == 8000
+      IO.inspect opts
+      # assert match?([timeout: 8000], Enum.find(opts)
+      assert match?([{:timeout, 8000}], opts)
+      assert match?([timeout: 8000], opts)
+      respfn.(method, url, opts)
+    end
+    ] do
+      Endpoint.request(:post, "transmissions", [])
+      Endpoint.request(:put, "transmissions", [])
+      Endpoint.request(:get, "transmissions", [])
     end
   end
 end
